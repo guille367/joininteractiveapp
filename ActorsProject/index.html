@@ -74,17 +74,22 @@
         function addActor(actor) {
             var actor = dialogToActor();
 
-            $("#actors").find("tbody").append(rowFromActor(actor));
-            return false;
+            //$("#actors").find("tbody").append(rowFromActor(actor));
+            //return false;
+            
+            $.blockUI({ message: '<h5>Cargando...</h5>' });
+            
             $.ajax({
                 type: 'POST',
                 data: JSON.stringify(actor),
                 url: '/api/actors',
                 contentType: "application/json",
                 success: function (data) {
+                    $.unblockUI();
                     $("#actors").find("tbody").append(rowFromActor(actor));
                 },
                 error: function () {
+                    $.unblockUI();
                     alert("Error al agregar actor");
                 },
                 complete: function () { 
@@ -93,31 +98,39 @@
         };
 
         function editActor() {
+            
             var actor = dialogToActor();
-
+            $.blockUI({ message: '<h5>Cargando...</h5>' });
+            
             $.ajax({
                 type: 'PUT',
                 data: JSON.stringify(actor),
                 url: '/api/actors',
                 contentType: "application/json",
-                complete: function (data) {
+                success: function (data) {
                     getActors();
                 },
                 error: function () {
-                    alert("No se pudo eliminar el actor seleccionado");
+                    $.blockUI({ message: '<h5>Cargando...</h5>' });
+                    alert("No se pudo editar el actor seleccionado");
                 }
             });
         }
 
         function deleteActor(idActor) {
+            
+            $.blockUI({ message: '<h5>Cargando...</h5>' });
+            
             $.ajax({
                 url: '/api/actors/' + idActor,
                 type: 'DELETE',
                 contentType: "application/json",
                 success: function (data) {
+                    $.unblockUI();
                     $("#actors").find("." + idActor).empty();
                 },
                 error: function () {
+                    $.unblockUI();
                     alert("No se pudo eliminar el actor seleccionado");
                 }
             });
@@ -142,12 +155,20 @@
         }
 
         function getActors() {
+            
+            $.blockUI({ message: '<h5>Cargando...</h5>' });
+            
             $("#actors").find("tbody").empty();
             $.ajax({
                 url: '/api/actors',
                 type: 'GET',
-                complete: function (data) {
+                success: function (data) {
                     loadFromData(data.responseJSON);
+                    $.unblockUI();
+                },
+                error: function(){
+                    $.unblockUI();
+                    alert("Error al obtener actores");
                 }
             });
         };
