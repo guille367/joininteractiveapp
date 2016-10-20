@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+
+    <h1>Actors</h1>
+
+    <table id="actors" border="1">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Bio</th>
+                <th>Picture</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+
+    <div id="divActor">
+        <form>
+            <fieldset>
+                <label for="id">Id</label>
+                <br />
+                <input type="text" id="id" class="input">
+                <br />
+                <label for="name">Name</label>
+                <br />
+                <input type="text" id="name" class="input">
+                <br/>
+                <label for="bio">Bio</label>
+                <br />
+                <input type="text" id="bio" class="input">
+                <br />
+                <label for="picture">picture</label>
+                <br />
+                <input type="text" id="picture" class="input">
+            </fieldset>
+        </form>
+    </div>
+
+    <input type="button" id="btnAdd" value="add" />
+    <a href="/browse.html">Actors</a>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            $('#divActor').dialog({
+                autoOpen: false
+            });
+            getActors();
+        });
+
+        $('#btnAdd').click(function () {
+            $('.input').val('');
+            $('#divActor').dialog({
+                title: 'Actors',
+                buttons: {
+                    "Add": addActor,
+                    Cancel: function () {
+                        $("#divActor").dialog("close");
+                    }
+                }
+            }).dialog("open");
+        });
+
+        function addActor(actor) {
+            var actor = dialogToActor();
+
+            $.ajax({
+                type: 'POST',
+                data: JSON.stringify(actor),
+                url: '/api/actors',
+                contentType: "application/json",
+                complete: function (data) {
+                    alert(data.responseText);
+                    $("#actors").find("tbody").append(rowFromActor(actor));
+                }
+            });
+        };
+
+        function editActor() {
+            var actor = dialogToActor();
+
+            $.ajax({
+                type: 'PUT',
+                data: JSON.stringify(actor),
+                url: '/api/actors',
+                contentType: "application/json",
+                complete: function (data) {
+                    alert(data.responseText);
+                    getActors();
+                }
+            });
+        }
+
+        function deleteActor(idActor) {
+            $.ajax({
+                url: '/api/actors/' + idActor,
+                type: 'DELETE',
+                contentType: "application/json",
+                complete: function (data) {
+                    alert(data.responseText);
+                    $("#actors").find("." + idActor).empty();
+                }
+            });
+        };
+
+        function loadEdit(id, name, bio, picture) {
+
+            $('#id').val(id);
+            $('#name').val(name);
+            $('#bio').val(bio);
+            $('#picture').val(picture);
+
+            $('#divActor').dialog({
+                title: 'Edit Actor',
+                buttons: {
+                    "Edit": editActor,
+                    Cancel: function () {
+                        $("#divActor").dialog("close");
+                    }
+                }
+            }).dialog('open')
+        }
+
+        function getActors() {
+            $("#actors").find("tbody").empty();
+            $.ajax({
+                url: '/api/actors',
+                type: 'GET',
+                complete: function (data) {
+                    loadFromData(data.responseJSON);
+                }
+            });
+        };
+
+        function loadFromData(data) {
+            var row = $("#actors").find("tbody").append(getRowsFromData(data));
+        };
+
+        function dialogToActor() {
+            var actor = {};
+
+            actor.id = $("#id").val();
+            actor.name = $("#name").val();
+            actor.bio = $("#bio").val();
+            actor.picture = $("#picture").val();
+
+            return actor;
+        }
+
+        function rowFromActor(actor) {
+            var str = '';
+            var strEdit = actor.id + ",'" + actor.name + "','" + actor.bio + "','" + actor.picture + "'";
+
+            str += '<tr class="' + actor.id + '">';
+            str += '<td>' + actor.id + '</td>';
+            str += '<td>' + actor.name + '</td>';
+            str += '<td>' + actor.bio + '</td>';
+            str += '<td><img src="' + actor.picture + '"></img></td>';
+            str += '<td><input type="button" value="edit" onclick="loadEdit(' + strEdit + ')"></button></td>';
+            str += '<td><input type="button" value="delete" onclick="deleteActor(' + actor.id + ')"></button></td>';
+
+            str += '</tr>';
+            return str;
+        };
+
+        function getRowsFromData(d) {
+
+            var str = '';
+
+            d.forEach(function (actor) {
+                str += rowFromActor(actor);
+            });
+
+            return str;
+        };
+
+    </script>
+
+</body>
+</html>
