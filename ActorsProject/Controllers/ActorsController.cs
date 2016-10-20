@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -30,7 +30,7 @@ namespace ActorsProject.Controllers
             {
                 actors = this.getActors();
                 actors.Add(actor);
-                writeActors(actors);
+                saveActors(actors);
                 htrm = Request.CreateResponse(HttpStatusCode.OK, "Actor agregado");
             }
             catch (Exception ex)
@@ -44,7 +44,19 @@ namespace ActorsProject.Controllers
         [HttpPut]
         public void EditActor([FromBody]Actor actor)
         {
-
+            try
+            {
+                actors = this.getActors();
+                int ind = actors.FindIndex(a => a.Id == actor.Id);
+                actors[ind] = actor;
+                saveActors(actors);
+                htrm = Request.CreateResponse(HttpStatusCode.OK, "Actor agregado");
+            }
+            catch(Exception e)
+            {
+                htrm = Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+            return htrm;
         }
 
         [HttpDelete]
@@ -54,7 +66,7 @@ namespace ActorsProject.Controllers
             {
                 actors = this.getActors();
                 actors.Remove(actors.Find(a => a.id == id));
-                writeActors(actors);
+                saveActors(actors);
                 htrm = Request.CreateResponse(HttpStatusCode.OK, "Actor eliminado");
             }
             catch (Exception ex)
@@ -76,7 +88,7 @@ namespace ActorsProject.Controllers
             return actors;
         }
 
-        private void writeActors(List<Actor> list)
+        private void saveActors(List<Actor> list)
         {
             using (StreamWriter sw = new StreamWriter(HttpContext.Current.Server.MapPath("~/Files/actors.json")))
             {

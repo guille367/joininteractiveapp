@@ -1,14 +1,19 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title></title>
-	<meta charset="utf-8" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.js"></script>
+    <script type="text/javascript" src="Scripts/jquery.BlockUI.js"></script>
 </head>
 <body>
 
     <h1>Actors</h1>
 
-    <table id="actors" border="1">
+    <table class="table-hover" id="actors" border="1">
         <thead>
             <tr>
                 <th>Id</th>
@@ -22,67 +27,67 @@
         </tbody>
     </table>
 
-    <div id="divActor">
-        <form>
-            <fieldset>
-                <label for="id">Id</label>
-                <br />
-                <input type="text" id="id" class="input">
-                <br />
-                <label for="name">Name</label>
-                <br />
-                <input type="text" id="name" class="input">
-                <br/>
-                <label for="bio">Bio</label>
-                <br />
-                <input type="text" id="bio" class="input">
-                <br />
-                <label for="picture">picture</label>
-                <br />
-                <input type="text" id="picture" class="input">
-            </fieldset>
-        </form>
-    </div>
+    <form id="dlgActor">
+        <fieldset>
+            <label for="id">Id</label>
+            <br />
+            <input required type="text" id="id" class="form-control">
+            <br />
+            <label for="name">Name</label>
+            <br />
+            <input type="text" id="name" class="form-control">
+            <br/>
+            <label for="bio">Bio</label>
+            <br />
+            <textarea rows="5" id="bio" class="form-control"></textarea>
+            <br />
+            <label for="picture">picture</label>
+            <br />
+            <input type="text" id="picture" class="form-control">
+            <br />
+            <input type="submit" onclick="addActor()" class="btn btn-primary btn-block" value="Agregar"/>
+            <input type="button" class="btn btn-danger btn-block" value="Cerrar"/>
+        </fieldset>
+    </form>
 
-    <input type="button" id="btnAdd" value="add" />
+    <input type="button" id="btnAdd" value="add" class="btn btn-primary"/>
     <a href="/browse.html">Actors</a>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="/resources/demos/style.css">
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script>
+
+    <script type="text/javascript">
 
         $(document).ready(function () {
-            $('#divActor').dialog({
+
+            $('#dlgActor').dialog({
                 autoOpen: false
             });
+
             getActors();
         });
 
         $('#btnAdd').click(function () {
             $('.input').val('');
-            $('#divActor').dialog({
-                title: 'Actors',
-                buttons: {
-                    "Add": addActor,
-                    Cancel: function () {
-                        $("#divActor").dialog("close");
-                    }
-                }
+            $('#dlgActor').dialog({
+                autoOpen: false
             }).dialog("open");
         });
 
         function addActor(actor) {
             var actor = dialogToActor();
 
+            $("#actors").find("tbody").append(rowFromActor(actor));
+            return false;
             $.ajax({
                 type: 'POST',
                 data: JSON.stringify(actor),
                 url: '/api/actors',
                 contentType: "application/json",
-                complete: function (data) {
-                    alert(data.responseText);
+                success: function (data) {
                     $("#actors").find("tbody").append(rowFromActor(actor));
+                },
+                error: function () {
+                    alert("Error al agregar actor");
+                },
+                complete: function () { 
                 }
             });
         };
@@ -96,8 +101,10 @@
                 url: '/api/actors',
                 contentType: "application/json",
                 complete: function (data) {
-                    alert(data.responseText);
                     getActors();
+                },
+                error: function () {
+                    alert("No se pudo eliminar el actor seleccionado");
                 }
             });
         }
@@ -107,26 +114,28 @@
                 url: '/api/actors/' + idActor,
                 type: 'DELETE',
                 contentType: "application/json",
-                complete: function (data) {
-                    alert(data.responseText);
+                success: function (data) {
                     $("#actors").find("." + idActor).empty();
+                },
+                error: function () {
+                    alert("No se pudo eliminar el actor seleccionado");
                 }
             });
         };
 
         function loadEdit(id, name, bio, picture) {
 
-            $('#id').val(id);
+            $('#id').attr('disabled', 'disabled').val(id);
             $('#name').val(name);
             $('#bio').val(bio);
             $('#picture').val(picture);
 
-            $('#divActor').dialog({
+            $('#dlgActor').dialog({
                 title: 'Edit Actor',
                 buttons: {
                     "Edit": editActor,
                     Cancel: function () {
-                        $("#divActor").dialog("close");
+                        $("#dlgActor").dialog("close");
                     }
                 }
             }).dialog('open')
@@ -167,8 +176,8 @@
             str += '<td>' + actor.name + '</td>';
             str += '<td>' + actor.bio + '</td>';
             str += '<td><img src="' + actor.picture + '"></img></td>';
-            str += '<td><input type="button" value="edit" onclick="loadEdit(' + strEdit + ')"></button></td>';
-            str += '<td><input type="button" value="delete" onclick="deleteActor(' + actor.id + ')"></button></td>';
+            str += '<td><input type="button" class="btn btn-warning" value="edit" onclick="loadEdit(' + strEdit + ')"></button></td>';
+            str += '<td><input type="button" class="btn btn-danger" value="delete" onclick="deleteActor(' + actor.id + ')"></button></td>';
 
             str += '</tr>';
             return str;
