@@ -8,18 +8,19 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.js"></script>
     <script type="text/javascript" src="Scripts/jquery.BlockUI.js"></script>
+    <script type="text/javascript" src="Scripts/gridmethods.js"></script>
 </head>
 <body>
 
-    <h1>Actors</h1>
+    <h1>Actores</h1>
 
     <table class="table-hover" id="actors" border="1">
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Name</th>
-                <th>Bio</th>
-                <th>Picture</th>
+                <th>Nombre</th>
+                <th>Biografia</th>
+                <th>Foto</th>
             </tr>
         </thead>
         <tbody>
@@ -27,33 +28,37 @@
         </tbody>
     </table>
 
-    <form id="dlgActor">
+    <div id="dlgActor">
         <fieldset>
             <label for="id">Id</label>
             <br />
-            <input required type="text" id="id" class="form-control">
+            <input type="text" id="id" disabled="disabled" class="form-control input">
             <br />
-            <label for="name">Name</label>
+            <label for="name">Nombre</label>
             <br />
-            <input type="text" id="name" class="form-control">
-            <br/>
+            <input type="text" id="name" class="form-control input">
+            <br />
             <label for="bio">Bio</label>
             <br />
-            <textarea rows="5" id="bio" class="form-control"></textarea>
+            <textarea rows="5" id="bio" class="form-control input"></textarea>
             <br />
-            <label for="picture">picture</label>
+            <label for="picture">Foto</label>
             <br />
-            <input type="text" id="picture" class="form-control">
+            <input type="text" id="picture" class="form-control input">
             <br />
-            <input type="submit" onclick="addActor()" class="btn btn-primary btn-block" value="Agregar"/>
-            <input type="button" class="btn btn-danger btn-block" value="Cerrar"/>
+            <input type="button" id="btnActor" class="btn btn-primary btn-block" />
+            <input type="button" onclick="$('#dlgActor').dialog('close')" class="btn btn-danger btn-block" value="Cerrar" />
         </fieldset>
-    </form>
+    </div>
 
-    <input type="button" id="btnAdd" value="add" class="btn btn-primary"/>
-    <a href="/browse.html">Actors</a>
+    <input type="button" id="btnAdd" value="Nuevo Actor" class="btn btn-primary"/>
+    <a href="browse.html">
+        <input type="button" class="btn btn-info" value="Listar Actores"/>
+    </a>
 
     <script type="text/javascript">
+
+        var localActors = [];
 
         $(document).ready(function () {
 
@@ -66,10 +71,43 @@
 
         $('#btnAdd').click(function () {
             $('.input').val('');
+            $('#btnActor').attr('value', 'Agregar').attr('onclick','addActor()');
+
+            var newId = 0;
+
+            if (localActors.length > 0)
+                newId = localActors[localActors.length - 1].id + 1;
+            else
+                newId = 1;
+
+            $('#id').val(newId);
+
             $('#dlgActor').dialog({
-                autoOpen: false
+                autoOpen: false,
+                title:'Nuevo Actor'
             }).dialog("open");
+
         });
+
+        function getActors() {
+
+            $.blockUI({ message: '<h5>Cargando...</h5>' });
+
+            $("#actors").find("tbody").empty();
+            $.ajax({
+                url: '/api/actors',
+                type: 'GET',
+                success: function (data) {
+                    localActors = data;
+                    loadFromData(data);
+                    $.unblockUI();
+                },
+                error: function () {
+                    $.unblockUI();
+                    alert("Error al obtener actores");
+                }
+            });
+        };
 
         function addActor(actor) {
             var actor = dialogToActor();
@@ -86,7 +124,9 @@
                 contentType: "application/json",
                 success: function (data) {
                     $.unblockUI();
+                    localActors.push(actor);
                     $("#actors").find("tbody").append(rowFromActor(actor));
+                    $('#dlgActor').dialog('close');
                 },
                 error: function () {
                     $.unblockUI();
@@ -109,6 +149,7 @@
                 contentType: "application/json",
                 success: function (data) {
                     getActors();
+                    $('#dlgActor').dialog('close');
                 },
                 error: function () {
                     $.blockUI({ message: '<h5>Cargando...</h5>' });
@@ -134,85 +175,6 @@
                     alert("No se pudo eliminar el actor seleccionado");
                 }
             });
-        };
-
-        function loadEdit(id, name, bio, picture) {
-
-            $('#id').attr('disabled', 'disabled').val(id);
-            $('#name').val(name);
-            $('#bio').val(bio);
-            $('#picture').val(picture);
-
-            $('#dlgActor').dialog({
-                title: 'Edit Actor',
-                buttons: {
-                    "Edit": editActor,
-                    Cancel: function () {
-                        $("#dlgActor").dialog("close");
-                    }
-                }
-            }).dialog('open')
-        }
-
-        function getActors() {
-            
-            $.blockUI({ message: '<h5>Cargando...</h5>' });
-            
-            $("#actors").find("tbody").empty();
-            $.ajax({
-                url: '/api/actors',
-                type: 'GET',
-                success: function (data) {
-                    loadFromData(data.responseJSON);
-                    $.unblockUI();
-                },
-                error: function(){
-                    $.unblockUI();
-                    alert("Error al obtener actores");
-                }
-            });
-        };
-
-        function loadFromData(data) {
-            var row = $("#actors").find("tbody").append(getRowsFromData(data));
-        };
-
-        function dialogToActor() {
-            var actor = {};
-
-            actor.id = $("#id").val();
-            actor.name = $("#name").val();
-            actor.bio = $("#bio").val();
-            actor.picture = $("#picture").val();
-
-            return actor;
-        }
-
-        function rowFromActor(actor) {
-            var str = '';
-            var strEdit = actor.id + ",'" + actor.name + "','" + actor.bio + "','" + actor.picture + "'";
-
-            str += '<tr class="' + actor.id + '">';
-            str += '<td>' + actor.id + '</td>';
-            str += '<td>' + actor.name + '</td>';
-            str += '<td>' + actor.bio + '</td>';
-            str += '<td><img src="' + actor.picture + '"></img></td>';
-            str += '<td><input type="button" class="btn btn-warning" value="edit" onclick="loadEdit(' + strEdit + ')"></button></td>';
-            str += '<td><input type="button" class="btn btn-danger" value="delete" onclick="deleteActor(' + actor.id + ')"></button></td>';
-
-            str += '</tr>';
-            return str;
-        };
-
-        function getRowsFromData(d) {
-
-            var str = '';
-
-            d.forEach(function (actor) {
-                str += rowFromActor(actor);
-            });
-
-            return str;
         };
 
     </script>

@@ -84,6 +84,8 @@
     <Content Include="browse.html" />
     <Content Include="index.html" />
     <Content Include="Global.asax" />
+    <Content Include="Scripts\gridmethods.js" />
+    <Content Include="Scripts\jquery.BlockUI.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

@@ -42,17 +42,17 @@ namespace ActorsProject.Controllers
         }
 
         [HttpPut]
-        public void EditActor([FromBody]Actor actor)
+        public HttpResponseMessage EditActor([FromBody]Actor actor)
         {
             try
             {
                 actors = this.getActors();
-                int ind = actors.FindIndex(a => a.Id == actor.Id);
+                int ind = actors.FindIndex(a => a.id == actor.id);
                 actors[ind] = actor;
                 saveActors(actors);
                 htrm = Request.CreateResponse(HttpStatusCode.OK, "Actor agregado");
             }
-            catch(Exception e)
+            catch(Exception ex)
             {
                 htrm = Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }

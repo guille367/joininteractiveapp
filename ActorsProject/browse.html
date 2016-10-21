@@ -3,38 +3,42 @@
 <head>
     <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.css" rel="stylesheet" />
-    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
     <link rel="Stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.css" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.js"></script>
+    <script type="text/javascript" src="Scripts/jquery.BlockUI.js"></script>
+    <script type="text/javascript" src="Scripts/gridmethods.js"></script>
 </head>
 <body>
 
-    <h2>Actors</h2>
+    <h2>Actores</h2>
     <hr class="separator" />
     <!--Contenedor de Actores-->
     <div class="container-fluid">
-        
-    </div>
 
+    </div>
+    <a href="/index.html">
+        <input type="button" value="Volver" class="btn btn-info" />
+    </a>
     <!--Prototipo de fila de actores-->
     <div class="row" id="newRow"></div>
 
     <!--Prototipo de elemento de actores -->
     <div id="actorElement" class="col-lg-6 col-md-6 col-sm-6" style="background-color:#f1f1f1; display:none">
-        <div class="col-lg-4 col-md-4 col-sm-4">
-            <h5 class="visible-xs" id="actorName">Holis</h5>
-            <img alt="img" id="actorImg" class="img-responsive img-rounded" src="" />
+        <div class="col-lg-4 col-md-6 col-sm-6">
+            <h4 class="hidden-sm-up" id="actorName"></h4>
+            <img alt="img" id="actorImg" class="img-responsive" src="" />
         </div>
-        <div class="col-lg-8 col-md-8 col-sm-8" style="background-color:#f1f1f1">
+        <div class="col-lg-8 col-md-6 col-sm-6 hidden-xs-down" style="background-color:#f1f1f1">
             <div class="row">
                 <div class="col">
-                    <h4 class="visible-sm" id="actorName">
-                    </h4>
+                    <h4 id="actorName"></h4>
                 </div>
             </div>
             <div class="row">
-                <div class="hidden-sm-down">
+                <div>
                     <p id="actorBio">
                     </p>
                 </div>
@@ -42,46 +46,35 @@
         </div>
     </div>
 
-    <input type="button" value="Button"/>
 </body>
 </html>
 <script type="text/javascript">
 
     $(document).ready(function () {
 
-        loadActors();
+        var actors = {};
 
-        /*var actors = {};
-
+        $.blockUI({ message: '<h5>Cargando...</h5>' });
         $.ajax({
         url: '/api/actors',
         type: 'GET',
         success: function (data) {
-        actors = data.responseJSON;
-        loadActors(actors);
-        },
+            $.unblockUI();
+            actors = data;
+            loadActors(actors);
+            },
         error: function (e, status) {
-        alert("Error al obtener actores");
-        }
-        })*/
+            $.unblockUI();
+            alert("Error al obtener actores");
+            }
+        })
 
     });
 
     function loadActors(actors) {
 
-        var actors = [];
         var actorTest = {};
         var elements = 0;
-
-        actorTest.name = "Brus";
-        actorTest.bio = "Que de películas de mierda";
-        /*actorTest.picture = "https://images-na.ssl-images-amazon.com/images/M/MV5BMjA0MjMzMTE5OF5BMl5BanBnXkFtZTcwMzQ2ODE3Mw@@._V1_UY317_CR27,0,214,317_AL_.jpg";*/
-
-        actors.push(actorTest);
-        actors.push(actorTest);
-        actors.push(actorTest);
-        actors.push(actorTest);
-        actors.push(actorTest);
 
         var rows = [];
         var row = $('#newRow').clone();
@@ -108,16 +101,7 @@
 
     }
 
-    function createElement(actor) {
 
-        var actorElement = $('#actorElement').clone();
-        $(actorElement).show();
-        $(actorElement).find('#actorName').html(actor.name);
-        $(actorElement).find('#actorBio').html(actor.bio);
-        $(actorElement).find('#actorImg').attr('src', actor.picture);
-
-        return actorElement;
-    }
 
 
 </script>
